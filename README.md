@@ -16,6 +16,7 @@ grunt.initConfig({
       matchall: false,
       extensions: 'js',
       specNameMatcher: 'spec',
+      captureExceptions: false,
       jUnit: {
         report: true,
         savePath : "./build/reports/jasmine/",
