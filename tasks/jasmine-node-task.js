@@ -30,11 +30,26 @@ module.exports = function (grunt) {
           useDotNotation: true,
           consolidate: true
         },
+        captureExceptions: false,
         growl: false
       });
       options.specFolders = grunt.util._.union(options.specFolders, this.filesSrc);
       if (options.projectRoot) {
         options.specFolders.push(options.projectRoot);
+      }
+      if (options.captureExceptions) {
+        // Grunt will kill the process when it handles an uncaughtException, so
+        // we need to insert a new handler before the Grunt handler to print
+        // out the error stack trace.
+        var handlers = process.listeners('uncaughtException');
+        process.removeAllListeners('uncaughtException');
+        handlers.unshift(function(e) {
+          grunt.log.error('Caught unhandled exception: ' + e.toString());
+          grunt.log.error(e.stack);
+        })
+        handlers.forEach(function(handler) {
+          process.on('uncaughtException', handler);
+        });
       }
       // Tell grunt this task is asynchronous.
       var done = this.async();
@@ -77,6 +92,7 @@ module.exports = function (grunt) {
         regExpSpec:   regExpSpec,
         junitreport: options.jUnit,
         includeStackTrace: options.includeStackTrace,
+        captureExceptions: options.captureExceptions,
         coffee: options.coffee,
         growl: options.growl
       };
